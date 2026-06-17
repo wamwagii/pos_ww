@@ -1,20 +1,13 @@
-markdown
-# 🏪 Multi-Tenant Point of Sale (POS) System
+
+# Multi-Tenant Point of Sale (POS) System
 
 A robust, secure, multi-tenant Point of Sale system built with Laravel, Filament, and PostgreSQL with Row-Level Security (RLS).
 
 ![Laravel](https://img.shields.io/badge/Laravel-13.x-red.svg)
-![Filament](https://img.shields.io/badge/Filament-5.x-blue.svg)
+![Filament](https://img.shields.io/badge/Filament-5.x-gold.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.x-blue.svg)
 ![PHP](https://img.shields.io/badge/PHP-8.5.x-purple.svg)
 
-## 📋 Overview
-
-This POS system is designed for businesses operating across multiple countries and currencies. It supports various business types including:
--Sports Clubs
--Supermarkets
--Pharmacies/Chemists
--Fast Food Restaurants
 
 ### Key Features
 
@@ -49,8 +42,6 @@ This POS system is designed for businesses operating across multiple countries a
 
 ### Step 1: Clone the Repository
 
-
-git clone https://github.com/wamwagii/pos_ww.git
 cd pos_ww
 
 - Step 2: Install Dependencies
@@ -61,14 +52,21 @@ npm install
 - Step 3: Environment Configuration
 
 cp .env.example .env
+
 Update your .env file:
 
 env
+
 DB_CONNECTION=pgsql
+
 DB_HOST=127.0.0.1
+
 DB_PORT=5432
+
 DB_DATABASE=multitenant_pos
+
 DB_USERNAME=app_user
+
 DB_PASSWORD=SecurePassword123!
 
 - Step 4: Database Setup
@@ -90,14 +88,23 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 User::create([
+
     'id' => (string) Str::uuid(),
+    
     'tenant_id' => '11111111-1111-1111-1111-111111111111',
+    
     'email' => 'admin@example.com',
+    
     'password_hash' => Hash::make('password123'),
+    
     'first_name' => 'Admin',
+    
     'last_name' => 'User',
+    
     'role' => 'admin',
+    
     'is_active' => true,
+    
 ]);
 
 - Step 6: Publish Assets
@@ -119,7 +126,9 @@ Every table has tenant_id and RLS policies ensuring tenants can only access thei
 sql
 
 CREATE POLICY tenant_isolation_select ON products
+
     FOR SELECT
+    
     USING (tenant_id = current_setting('app.current_tenant')::UUID);
 
 User Roles
@@ -183,48 +192,85 @@ The system uses PostgreSQL session variables for tenant isolation:
 
 php
 // Set tenant context
+
 DB::statement("SELECT set_config('app.current_tenant', ?, true)", [$tenantId]);
 
 // Set user context
+
 DB::statement("SELECT set_config('app.current_user_id', ?, true)", [$userId]);
+
 Middleware
 php
+
+
 // app/Http/Middleware/SetTenantDatabaseContext.php
+
 public function handle(Request $request, Closure $next)
 {
     $tenant = Filament::getTenant();
+    
     if ($tenant) {
+    
         DB::statement("SELECT set_config('app.current_tenant', ?, true)", [$tenant->getKey()]);
+        
     }
+    
     return $next($request);
 }
 
 - Database Schema
+
 Key Tables
+
 tenants
 Column	Type	Description
+
 id	UUID	Primary key
+
 name	VARCHAR	Tenant name
+
 domain	VARCHAR	Unique domain
+
 country	VARCHAR	Country
+
 currency_code	VARCHAR(3)	Default currency
+
 is_active	BOOLEAN	Active status
+
+
 users
+
 Column	Type	Description
+
 id	UUID	Primary key
+
 tenant_id	UUID	Foreign key to tenants
+
 email	VARCHAR	Login email
+
 password_hash	VARCHAR	Hashed password
+
 role	VARCHAR	admin/supervisor/cashier
+
 pin_code	VARCHAR(6)	Supervisor PIN
+
+
 orders
+
 Column	Type	Description
+
 id	UUID	Primary key
+
 tenant_id	UUID	Foreign key to tenants
+
 order_number	VARCHAR	Unique order number
+
 total_amount	DECIMAL	Order total
+
 payment_method	VARCHAR	Cash/Card/M-PESA
+
 amount_tendered	DECIMAL	Cash received
+
 change_due	DECIMAL	Change to return
 
 
@@ -253,6 +299,8 @@ php artisan route:cache
 
 
 **License**
-This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+
 
 
